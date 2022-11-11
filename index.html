@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #snooze {
+            visibility: hidden;
+        }
+    </style>
+
+    <title>Alarm Clock</title>
+</head>
+
+<body>
+
+    <div id=Time></div>
+    <div id="setAlarm"></div>
+    <div>
+
+        <label for="hr">Hour</label>
+        <input type="number" name="hr" id="hour" required min="0" max="24">
+        <label for="mn">Minute</label>
+        <input type="number" name="mn" id="min" required min="0" max="60">
+        <label for="Day">Day</label>
+        <input type="Text" name="Day" id="Day" required>
+        <button type="submit" onclick="validate()">Add alarm</button>
+        <button type="submit" onclick="DelteAlarm()">Deletealarm</button>
+
+
+    </div>
+
+    <div id="snooze" style="margin-top: 2vw;">
+        <button onclick="snoozeAlarm()">snooze</button>
+        <button onclick="autostop()">Stop</button>
+    </div>
+
+    <script>var audio = new Audio('./audio/Alarm-Clock.mp3');
+        let Time = document.getElementById("Time");
+        let setAlarm = document.getElementById("setAlarm");
+        function changeTime() {
+            let current_time = new Date();
+            let watch = current_time.getHours() + " : " + current_time.getMinutes() + " : " + current_time.getSeconds();
+            Time.innerHTML = watch;
+        }
+        setInterval(changeTime, 1000);
+
+
+
+        let hour;
+        let min;
+        let day;
+        let count = 0;
+        let totalAlarm = [];
+        let c = 0;
+        let week = ["sunday", "monday", "tuesday", "wednesday", "thrusday", "friday", "saturday"];
+        class Alarm {
+            constructor(hour, min, day) {
+                this.hour = hour;
+                this.min = min;
+                this.day = day;
+            }
+        }
+
+        function validate() {
+            hour = document.getElementById("hour").value;
+            min = document.getElementById("min").value;
+            day = document.getElementById("Day").value;
+            if (!hour == " " && hour < 25) {
+                if (!min == " " && min < 61) {
+                    week.forEach(element => {
+                        if (day == element) {
+                            addAlarm();
+                            c = 1;
+                            return true;
+                        }
+
+                    });
+                    if (!c == 1) {
+                        alert("Please Enter valid day");
+                    }
+
+                } else {
+                    alert("Please Enter valid minute");
+                }
+            } else {
+                alert("Please Enter valid hour");
+            }
+        }
+
+        function clearInput() {
+            document.getElementById("hour").value = "";
+            document.getElementById("min").value = "";
+            document.getElementById("Day").value = "";
+        }
+
+        function addAlarm() {
+            totalAlarm.push(new Alarm(hour, min, day));
+
+            const node = document.createElement("p");
+            const textnode = document.createTextNode(totalAlarm[count].hour + " : " + totalAlarm[count].min + " , " + totalAlarm[count].day);
+            node.appendChild(textnode);
+            document.getElementById("setAlarm").appendChild(node);
+            count++;
+
+            clearInput();
+            return false;
+        }
+
+        let current_day;
+        function convertday(currentday) {
+            switch (currentday) {
+                case (0):
+                    current_day = "sunday";
+                    break;
+                case (1):
+                    current_day = "monday";
+                    break;
+                case (2):
+                    current_day = "tuesday";
+                    break;
+                case (3):
+                    current_day = "wednesday";
+                    break;
+                case (4):
+                    current_day = "thrusday"
+                    break;
+                case (5):
+                    current_day = "friday"
+                    break;
+                case (6):
+                    current_day = "saturday"
+                    break;
+
+            }
+
+        }
+
+        let timer = 1000;
+        let interval;
+        let ForSnooze;
+        let inter;
+        let snoozecount = 0;
+        function snoozeAlarm() {
+            snoozecount++;
+            audio.pause();
+            clearInterval(interval);
+            clearInterval(inter);
+            document.getElementById("snooze").style.visibility = "hidden";
+            setTimeout(settimer, 1000 * 60 * 5);
+        }
+
+        function settimer() {
+            if (snoozecount < 4) {
+                alarmSound();
+                interval = setInterval(checkAlarm, timer);
+            }
+
+        }
+        function autostop() {
+            clearInterval(inter);
+            document.getElementById("snooze").style.visibility = "hidden";
+        }
+
+        function alarmSound() {
+            clearInterval(interval);
+            inter = setInterval(() => {
+                audio.play();
+            }, 1000);
+            setTimeout(autostop, 1000 * 60);
+            document.getElementById("snooze").style.visibility = "visible";
+        }
+
+        function checkAlarm() {
+
+            let currentday = new Date().getDay();
+            let currenthour = new Date().getHours();
+            let currentmin = new Date().getMinutes();
+            convertday(currentday);
+            // convertHour(currenthour);
+            console.log(currenthour);
+
+            for (let i = 0; i < totalAlarm.length; i++) {
+                if (totalAlarm[i].day == current_day) {
+
+                    if (totalAlarm[i].hour == currenthour) {
+                        console.log("hello");
+                        if (totalAlarm[i].min == currentmin) {
+
+                            ForSnooze = i;
+                            snoozecount = 0;
+                            alarmSound();
+                        }
+
+                    }
+                }
+            }
+        }
+        interval = setInterval(checkAlarm, timer);
+
+
+
+        function DelteAlarm() {
+            hour = document.getElementById("hour").value;
+            min = document.getElementById("min").value;
+            day = document.getElementById("Day").value;
+
+            for (let i = 0; i < totalAlarm.length; i++) {
+                if (totalAlarm[i].day == day) {
+                    if (totalAlarm[i].hour == hour) {
+                        if (totalAlarm[i].min == min) {
+                            setAlarm.removeChild(setAlarm.children[i]);
+                            totalAlarm = totalAlarm.filter(el => el != totalAlarm[i]);
+
+                        }
+
+                    }
+                }
+
+            }
+
+
+
+            clearInput();
+
+        }</script>
+</body>
+
+</html>
